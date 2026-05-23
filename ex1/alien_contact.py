@@ -7,7 +7,7 @@ class ContactType(str, Enum):
     RADIO = "radio"
     VISUAL = "visual"
     PHYSICAL = "physical"
-    TELEPTHIC = "telepathic"
+    TELEPATHIC = "telepathic"
 
 
 class AlienContact(BaseModel):
@@ -30,9 +30,22 @@ class AlienContact(BaseModel):
     
     @model_validator(mode='after')
     def Strong_Signal(self):
-        if self.signal_strength > 7.0 and message_recerived:
-            return self
-        raise ValueError("The Signal Strength less than 7.0 or missing received message")
+        if self.signal_strength > 7.0 and not self.message_received:
+            raise ValueError("The Signal Strength more than 7.0 or missing received message")
+        return self
+
+    @model_validator(mode='after')
+    def Telepathic_contact(self):
+        if self.contact_type == ContactType.TELEPATHIC and self.witness_count < 3:
+            raise ValueError("Telepathic contact requires at least 3 witnesses")
+        return self
+
+    @model_validator(mode='after')
+    def Physical_contact(self):
+        if self.contact_type == ContactType.PHYSICAL and not self.is_verified:
+            raise ValueError("Physical contact reports must be verified")
+        return self
+
 
 
 valid_contact = AlienContact(
