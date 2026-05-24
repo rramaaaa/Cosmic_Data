@@ -21,31 +21,29 @@ class AlienContact(BaseModel):
     message_received: str | None = Field(max_length=500)
     is_verified: bool = Field(default=False)
 
-
     @model_validator(mode='after')
-    def ContactID_Checker(self):
-        if self.contact_id.startswith("AC") == False:
+    def validator_Checker(self):
+        if not self.contact_id.startswith("AC"):
             raise ValueError("The Contact ID should start with AC")
-        return self
-    
-    @model_validator(mode='after')
-    def Strong_Signal(self):
-        if self.signal_strength > 7.0 and not self.message_received:
-            raise ValueError("The Signal Strength more than 7.0 or missing received message")
-        return self
 
-    @model_validator(mode='after')
-    def Telepathic_contact(self):
-        if self.contact_type == ContactType.TELEPATHIC and self.witness_count < 3:
-            raise ValueError("Telepathic contact requires at least 3 witnesses")
-        return self
+        elif self.signal_strength > 7.0 and not self.message_received:
+            raise ValueError(
+                    "The Signal Strength more than 7.0 "
+                    "or missing received message"
+                    )
 
-    @model_validator(mode='after')
-    def Physical_contact(self):
-        if self.contact_type == ContactType.PHYSICAL and not self.is_verified:
+        elif self.contact_type == ContactType.TELEPATHIC and\
+                self.witness_count < 3:
+            raise ValueError(
+                    "Telepathic contact requires at least 3 witnesses"
+                    )
+
+        elif self.contact_type == ContactType.PHYSICAL\
+                and not self.is_verified:
             raise ValueError("Physical contact reports must be verified")
-        return self
 
+        else:
+            return self
 
 
 valid_contact = AlienContact(
@@ -71,14 +69,14 @@ print(f"Message: {valid_contact.message_received}")
 print()
 
 try:
-    valid_contact = AlienContact(
+    AlienContact(
         contact_id="AC_2024_001",
         timestamp=datetime.now(),
-        contact_type="radio",
+        contact_type="telepathic",
         location="Area 51, Nevada",
         signal_strength=8.0,
         duration_minutes=45,
-        witness_count=5,
+        witness_count=2,
         message_received="’Greetings from Zeta Reticuli’"
         )
 
@@ -86,4 +84,4 @@ except ValidationError as error:
     print("======================================")
     print("Expected validation error:")
     for err in error.errors():
-            print(err["msg"])
+        print(err["msg"])
